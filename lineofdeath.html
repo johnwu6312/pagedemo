@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="white"/>
+    <meta name="keywords" content="programming, security, fave"/>
+    <meta property="og:title" content="The inception bar: a new phishing method"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="https://jameshfisher.com/assets/jim_512.jpg"/>
+    <meta property="og:url" content="https://jameshfisher.com/2019/04/27/the-inception-bar-a-new-phishing-method/"/>
+    <meta property="og:description" content="Welcome to HSBC, the world・s seventh-largest bank! Of course, the page you・re reading isn・t actually hosted on hsbc.com; it・s hosted on jameshfisher.com. But when you visit this page on Chrome for mobile and scroll a little way, the page is able to display itself as hsbc.com - and worse, the page is able to jail you in this fake browser! In this post I show how the attack works, then suggest some ways Chrome can fix this vulnerability, then finally show you how to get out if you・re still stuck here. But first, the proof:  "/>
+    <meta property="og:site_name" content="jameshfisher.com"/>
+    
+    <link rel="canonical" href="https://jameshfisher.com/2019/04/27/the-inception-bar-a-new-phishing-method/"/>
+    <link rel="icon" type="image/png" href="https://jameshfisher.com/assets/jim_128.png" />
+    <link rel="manifest" href="/manifest.json"/>
+    <link rel="alternate" type="application/rss+xml" href="https://jameshfisher.com/feed.xml" />
+    <title>The inception bar: a new phishing method</title>
+    <style type="text/css">
+body { margin: 0 1em; font-family: sans-serif; }
+#content { max-width: 50em; margin: 2em auto; }
+* { font-size: 18px; line-height: 1.6em; box-sizing: border-box; }
+code, .highlight { background: #eee; }
+td, th { text-align: left; padding-right: 1em; vertical-align: top; }
+.highlight .n, .highlight .nf, .highlight .nv { text-decoration: underline; }
+.language-diff .highlight .gi { color: #22863a; background-color: #f0fff4; }
+.language-diff .highlight .gd { color: #b31d28; background-color: #ffeef0; }
+a:link, a:visited { text-decoration: none; }
+.date { font-size: 0.7em; }
+.jim_image { display: block; box-shadow: 2px 2px 10px #ccc; }
+blockquote { border-left: 2px solid black; margin-left: 0; padding-left: 1rem; }
+p > img, p > a > img { border: 2px solid black; width: 100%; }
+.answer {
+  border-color: #8ec58e;
+  padding: 0 0.3rem;
+  border-radius: 3px; border: 2px solid #8585d0;
+}
+.answer:not(.revealed) {
+  color: rgba(0,0,0,0);
+  background-image: url("https://d33wubrfki0l68.cloudfront.net/be480e676e29258dcd0ac164fcaaf1f3e517a936/2c442/assets/question-mark.svg");
+  cursor: pointer;
+}
+.answer:not(.revealed) * {
+  opacity: 0;
+}
+.aside {
+  float: right;
+  max-width: 400px;
+  margin: 0 0 0 1em;
+}
+sup, sub { font-size: 0.8em; vertical-align: baseline; position: relative; top: -0.4em; }
+sub { top: 0.4em; }
+small { font-size: smaller; }
+</style>
+
+  </head>
+  <body>
+    <a href="/" style="display: block; transform: rotate(-5deg); margin: 0 2em 0 -1.6em; float: left;">
+      <video autoplay loop poster="/assets/jim_512.jpg" class="jim_image" style="height: 128px; object-fit: cover; padding: 5px;">
+        <source src="https://d33wubrfki0l68.cloudfront.net/80ba53fae2eb5d0d055fe3a721d5b193011666bc/6ad35/assets/jim.webm" type="video/webm" />
+        <source src="https://d33wubrfki0l68.cloudfront.net/a308217d442f1d4b092baea3b0c61b489815677f/b2e59/assets/jim.mp4" type="video/mp4" />
+      </video>
+    </a>
+    <div id="content">
+      <h1>The inception bar: a new phishing method
+</h1>
+      
+      
+      <p>Welcome to HSBC, the world・s seventh-largest bank!
+Of course, the page you・re reading isn・t actually hosted on <code class="highlighter-rouge">hsbc.com</code>;
+it・s hosted on <code class="highlighter-rouge">jameshfisher.com</code>.
+But when you visit this page on Chrome for mobile and scroll a little way,
+the page is able to display itself as <code class="highlighter-rouge">hsbc.com</code> -
+and worse,
+the page is able to jail you in this fake browser!
+In this post I show how the attack works,
+then suggest some ways Chrome can fix this vulnerability,
+then finally show you how to get out if you・re still stuck here.
+But first, the proof:</p>
+
+<p><img src="https://d33wubrfki0l68.cloudfront.net/6ada7ab7247e7927279c44f76470423f5ec2c97d/322b8/assets/2019-04-27/proof.png" /></p>
+
+<p>In Chrome for mobile,
+when the user scrolls down, 
+the browser hides the URL bar,
+and hands the URL bar・s screen space to the web page.
+Because the user associates this screen space with ：trustworthy browser UI；,
+a phishing site can then use it to pose as a different site,
+by displaying its own fake URL bar -
+the inception bar!</p>
+
+<p>This is bad, but it gets worse.
+Normally, when the user scrolls up,
+Chrome will re-display the true URL bar.
+But we can trick Chrome so that it never re-displays the true URL bar!
+Once Chrome hides the URL bar,
+we move the entire page content into a ：scroll jail； -
+that is, a new element with <code class="highlighter-rouge">overflow:scroll</code>.
+Then the user <em>thinks</em> they・re scrolling up in the page,
+but in fact they・re only scrolling up in the scroll jail!
+Like a dream in <em>Inception</em>,
+the user believes they・re in their own browser,
+but they・re actually in a browser within their browser.
+Here・s a video of the hack in use:</p>
+
+<video width="100%" controls="" autoplay="" loop="" style="margin: 0 auto; border: 2px solid black;">
+  <source src="https://d33wubrfki0l68.cloudfront.net/783bd862c3df19b6fb4eac0b4f687d598c957891/a3915/assets/2019-04-27/demo.webm" type="video/webm" />
+  Your browser does not support the video tag.
+</video>
+
+<p>But it gets even worse!
+Even with the above ：scroll jail；,
+the user should be able to scroll to the top of the jail,
+at which point Chrome will re-display the URL bar.
+But we can disable this behavior, too!
+We insert a very tall padding element
+at the top of the scroll jail.
+Then, if the user tries to scroll into the padding,
+we scroll them back down to the start of the content!
+It looks like a page refresh.</p>
+
+<p>In my proof-of-concept,
+I・ve just screenshotted Chrome・s URL bar on the HSBC website,
+then inserted that into this webpage.
+With a little more effort,
+the page could detect which browser it・s in,
+and forge an inception bar for that browser.
+With yet more effort,
+the inception bar could be made interactive.
+Even if the user isn・t fooled by the current page,
+you can get another try 
+after the user enters ：gmail.com； in the inception bar!</p>
+
+<p>Is this a serious security flaw?
+Well, even I, as the creator of the inception bar,
+found myself accidentally using it!
+So I can imagine this technique fooling users 
+who are less aware of it,
+and who are less technically literate.
+The only time the user has the opportunity to verify the true URL
+is on page load, 
+before scrolling the page.
+After that, there・s not much escape.</p>
+
+<p>How can you guard yourself against this attack?
+I don・t really know.
+I see it as a security flaw in Chrome.
+But what・s the fix?
+There・s a trade-off,
+between maximizing screen space on one hand,
+and retaining trusted screen space on the other.
+One compromise would be for Chrome to retain a small amount of screen space
+above <a href="https://textslashplain.com/2017/01/14/the-line-of-death/">the ：line of death；</a>
+instead of giving up literally <em>all</em> screen space to the web page.
+Chrome could use this space to signal that 
+：the URL bar is currently collapsed；,
+e.g. by displaying the shadow of an almost-hidden URL bar.</p>
+
+<p>I don・t want to keep you any longer.
+If you・re still stuck here,
+one way to get out is to
+<a href="https://news.ycombinator.com/item?id=19768072">go to the Hacker News discussion and upvote this article</a>.
+Or, for hacks similar to this one,
+see <a href="https://feross.org/html5-fullscreen-api-attack/">this inception attack based on the fullscreen API</a>,
+or <a href="https://jameshfisher.github.io/cursory-hack/">my ：custom cursor； inception attack from 2016</a>.</p>
+
+<div id="fakeurlbar" style="display: none; position: fixed; top: 0px; left: 0; height: 74.77037037037037px; width: 100vw; background-image: url('/assets/2019-04-27/bar_background.png'); background-size: 19px 74.77037037037037px;">
+  <img src="https://d33wubrfki0l68.cloudfront.net/402a3459efb95802841f97b7ffef97fd1c6a5f95/9718c/assets/2019-04-27/bar_left.png" style="float: left; width: 211.72222222222223px;" />
+  <img src="https://d33wubrfki0l68.cloudfront.net/91e6aa57c56f24f26ddc72cac39a8ccbd4982e38/93698/assets/2019-04-27/bar_right.png" style="float: right;  width: 124.74444444444444px;" />
+</div>
+
+<script>
+  let scrollJailEl = null;
+  const initialHeight = window.innerHeight;
+  const fakeUrlBarEl = document.getElementById("fakeurlbar");
+  const fakeTopHeight = 200;
+  document.body.appendChild(fakeUrlBarEl);
+  window.onresize = function() {
+    if (window.innerHeight > initialHeight && !scrollJailEl) {
+      // Chrome has given up its URL bar! 
+      // Create the scroll jail and the fake URL bar!
+
+      const jailScrollTo = window.scrollY;
+
+      fakeUrlBarEl.style.display = "block";
+
+      document.body.style.margin = "0";
+
+      scrollJailEl = document.createElement("div");
+      scrollJailEl.style.position = "fixed";
+      scrollJailEl.style.overflowX = "scroll";
+      scrollJailEl.style.overflowY = "scroll";
+      scrollJailEl.style.width = window.innerWidth + "px";
+      scrollJailEl.style.height = window.innerHeight + "px";
+      scrollJailEl.style.top = "56px";
+      scrollJailEl.style.padding = "0 1em";
+
+      // create the fake top
+      const fakeTopEl = document.createElement("div");
+      fakeTopEl.style.height = fakeTopHeight + "px";
+      scrollJailEl.appendChild(fakeTopEl);
+
+      // move everything into the scroll jail
+      while (document.body.children.length > 0) {
+        const child = document.body.children[0];
+        scrollJailEl.appendChild(child);
+      }
+
+      document.body.appendChild(scrollJailEl);
+      document.body.appendChild(fakeUrlBarEl);
+
+      scrollJailEl.scrollTop = jailScrollTo + fakeTopHeight + 56;
+
+      let scroller;
+      scrollJailEl.onscroll = e => {
+        clearTimeout(scroller);
+        scroller = setTimeout(() => {
+          // We stopped scrolling. Reset the jail.
+          scrollJailEl.scrollTo({
+            top: Math.max(scrollJailEl.scrollTop, fakeTopHeight),
+            left: 0,
+            behavior: 'smooth'
+          });
+        }, 100);
+        console.log("scroll");
+      };
+    }
+  };
+</script>
+
+
+      <p style="text-align: center">
+        <a target="_blank" style="display: inline-block; padding: 4px 10px; margin: 2em auto; background-color: #1b95e0; color: #fff; cursor: pointer;" href="https://twitter.com/intent/follow?screen_name=MrJamesFisher&original_referer=https://jameshfisher.com/2019/04/27/the-inception-bar-a-new-phishing-method/">
+          Get updates on Twitter
+        </a>
+      </p>
+      <hr/>
+      <h3>More by Jim</h3>
+      <p class="posts">
+        <ul>
+          <li><a class="post" href="/2019/04/27/the-inception-bar-a-new-phishing-method/">The inception bar: a new phishing method</a></li><li><a class="post" href="/2019/03/23/the-hacker-hype-cycle/">The hacker hype cycle</a></li><li><a class="post" href="/2019/02/16/project-c-43-the-lost-origins-of-asymmetric-crypto/">Project C-43: the lost origins of asymmetric crypto</a></li><li><a class="post" href="/2019/01/26/how-hacker-news-stays-interesting/">How Hacker News stays interesting</a></li><li><a class="post" href="/2019/01/20/my-parents-are-flat-earthers/">My parents are Flat-Earthers</a></li><li><a class="post" href="/2018/04/07/the-dots-do-matter-how-to-scam-a-gmail-user/">The dots do matter: how to scam a Gmail user</a></li><li><a class="post" href="/2017/12/02/the-sorry-state-of-openssl-usability/">The sorry state of OpenSSL usability</a></li><li><a class="post" href="/2017/11/08/i-hate-telephones/">I hate telephones</a></li><li><a class="post" href="/2017/10/26/time-thought-and-typing/">The Three Ts of Time, Thought and Typing: measuring cost on the web</a></li><li><a class="post" href="/2017/05/19/granddad-died-today/">Granddad died today</a></li><li><a class="post" href="/2014/05/11/your-syntax-highlighter-is-wrong/">Your syntax highlighter is wrong</a></li>
+        </ul>
+      </p>
+      <p>
+        Tagged <a class="post" href="/tag/programming">#programming</a>, <a class="post" href="/tag/security">#security</a>, <a class="post" href="/tag/fave">#fave</a>.
+        
+          All content copyright James Fisher 2019.
+          This post is not associated with my employer.
+        
+        <a href="https://github.com/jameshfisher/jameshfisher.com/edit/master/_posts/2019-04-27-the-inception-bar-a-new-phishing-method.md">Found an error? Edit this page.</a>
+      </p>
+      <style>
+.navbar { display: flex; margin: 1em 0; }
+.navbar .navbar-item { flex-grow: 1; text-align: center; }
+</style>
+<div class="navbar">
+  <div class="navbar-item"><a href="/">Jim Fisher</a></div>
+  <div class="navbar-item"><a href="/speaking/">Speaking</a></div>
+  <div class="navbar-item"><a href="/blogroll/">Blogroll</a></div>
+  <div class="navbar-item"><a href="https://vidr.io">Vidrio</a></div>
+  <div class="navbar-item"><a href="https://jameshfisher.com/feed.xml">RSS</a></div>
+</div>
+
+    </div>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-90722538-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <script>
+    if (window.navigator && window.navigator.serviceWorker) {
+      window.navigator.serviceWorker.register("/service-worker.js");
+    }
+    </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", () =>
+      Array.prototype.forEach.call(
+        document.getElementsByClassName("answer"),
+        el => el.addEventListener("click", () => el.classList.add("revealed"))));
+    </script>
+  </body>
+</html>
